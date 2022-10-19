@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/SDASVM.dir/main.cpp.o CMakeFiles/SDASVM.dir/VM.cpp.o -o SDASVM 
