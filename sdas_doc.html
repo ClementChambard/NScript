@@ -1,0 +1,1344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-03-26 Sat 16:33 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smile Destructor Attack Script</title>
+<meta name="author" content="Clement Chambard" />
+<meta name="description" content="SDAS documentations" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+</style>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Smile Destructor Attack Script</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orga2a4973">SYNTAX</a>
+<ul>
+<li><a href="#org5c9d609">Header</a>
+<ul>
+<li><a href="#orga244ba4">attack name</a></li>
+<li><a href="#org1953923">anim name</a></li>
+</ul>
+</li>
+<li><a href="#orge43c832">Begin and end of script</a></li>
+<li><a href="#org0a2c425">Subroutines</a></li>
+<li><a href="#orgdbf9d02">Comments</a></li>
+<li><a href="#orge355c54">Frame labels</a>
+<ul>
+<li><a href="#orgf6fea73">The 0 label</a></li>
+<li><a href="#orga586ca3">Relative labels</a></li>
+</ul>
+</li>
+<li><a href="#orga40bf22">Position labels and jump instructions</a>
+<ul>
+<li><a href="#org74fedd1">Position label</a></li>
+<li><a href="#org876ff9e">Jump instructions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org520400b">ALIASES</a>
+<ul>
+<li><a href="#org5175872">instruction alias</a></li>
+<li><a href="#org60edf99">variable alias</a></li>
+<li><a href="#orgc877fee">value alias</a></li>
+<li><a href="#org54ed367">example</a></li>
+</ul>
+</li>
+<li><a href="#org94ebb64">REGISTERS AND RESERVED VALUES</a>
+<ul>
+<li><a href="#orgd78f332">int values</a></li>
+<li><a href="#org0174c4f">float values</a></li>
+</ul>
+</li>
+<li><a href="#org801ad38">INSTRUCTION SET:</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga2a4973" class="outline-2">
+<h2 id="orga2a4973">SYNTAX</h2>
+<div class="outline-text-2" id="text-orga2a4973">
+</div>
+<div id="outline-container-org5c9d609" class="outline-3">
+<h3 id="org5c9d609">Header</h3>
+<div class="outline-text-3" id="text-org5c9d609">
+<p>
+Each script must begin with a specific header
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    // Header
+    attack_name: "name";
+    anim_name: "anim name";
+</pre>
+</div>
+</div>
+<div id="outline-container-orga244ba4" class="outline-4">
+<h4 id="orga244ba4">attack name</h4>
+<div class="outline-text-4" id="text-orga244ba4">
+<p>
+The name of the attack
+    (used in interpreter mode)
+</p>
+</div>
+</div>
+<div id="outline-container-org1953923" class="outline-4">
+<h4 id="org1953923">anim name</h4>
+<div class="outline-text-4" id="text-org1953923">
+<p>
+The name of the animation
+    (used to play anim along with the script)
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orge43c832" class="outline-3">
+<h3 id="orge43c832">Begin and end of script</h3>
+<div class="outline-text-3" id="text-orge43c832">
+<p>
+Each script must contain these statements :
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    // Header
+
+    // Start close
+    #begin
+
+        // Script core
+
+    // End close
+    #end
+</pre>
+</div>
+<ul class="org-ul">
+<li><code>#begin</code>
+will mark the entry point of the script and open a <b>code block</b></li>
+<li><code>#end</code>
+will mark the end of the <b>code block</b>. Anything after can only be <b>subroutines</b></li>
+<li><code>#sub</code> <i>name</i>
+will open a new code block for a new <b>sub</b></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org0a2c425" class="outline-3">
+<h3 id="org0a2c425">Subroutines</h3>
+<div class="outline-text-3" id="text-org0a2c425">
+<p>
+A script can use <b>subroutines</b> :
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    // Header
+
+    // Script that uses the subroutine
+    #begin
+        Subroutine();
+    #end
+
+    // Start a new subroutine and name it
+    #sub Subroutine
+
+        // Subroutine code
+
+    // End close
+    #end
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgdbf9d02" class="outline-3">
+<h3 id="orgdbf9d02">Comments</h3>
+<div class="outline-text-3" id="text-orgdbf9d02">
+<p>
+A comment is a line beginning with <code>//</code> or anything between the <code>/**/</code> delimiters as seen in the previous examples
+</p>
+</div>
+</div>
+<div id="outline-container-orge355c54" class="outline-3">
+<h3 id="orge355c54">Frame labels</h3>
+<div class="outline-text-3" id="text-orge355c54">
+<p>
+Each line of the script will be executed at a specific point in time
+</p>
+</div>
+<div id="outline-container-orgf6fea73" class="outline-4">
+<h4 id="orgf6fea73">The 0 label</h4>
+<div class="outline-text-4" id="text-orgf6fea73">
+<p>
+This time label will be executed when the script is first called
+</p>
+</div>
+</div>
+<div id="outline-container-orga586ca3" class="outline-4">
+<h4 id="orga586ca3">Relative labels</h4>
+<div class="outline-text-4" id="text-orga586ca3">
+<p>
+These labels compare the time with the previous label
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    #begin
+
+    0:  //the 0 label
+
+    2:  // another label
+
+    -1: // has time 2-1 = 1
+
+    +2: // has time 1+2 = 3
+
+    #end
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-orga40bf22" class="outline-3">
+<h3 id="orga40bf22">Position labels and jump instructions</h3>
+<div class="outline-text-3" id="text-orga40bf22">
+</div>
+<div id="outline-container-org74fedd1" class="outline-4">
+<h4 id="org74fedd1">Position label</h4>
+<div class="outline-text-4" id="text-org74fedd1">
+<p>
+These labels mark a position in the script.
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    0:
+        instruction1();
+    label:
+        instruction2();
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org876ff9e" class="outline-4">
+<h4 id="org876ff9e">Jump instructions</h4>
+<div class="outline-text-4" id="text-org876ff9e">
+<p>
+You can use any of the <b>jump instructions</b> to go directly to a label :
+</p>
+<div class="org-src-container">
+<pre class="src src-sdas
+
+">
+    label:
+        instruction2();
+        jump(label, 0);  // in that case, instruction2 will be executed indefinitely
+</pre>
+</div>
+<ul class="org-ul">
+<li>jump(pos, time);                    <i>&#x2013; see instruction 200</i></li>
+<li>jumpDec(pos, time, var);            <i>&#x2013; see instruciton 201</i></li>
+<li>jumpEq(pos, time, var1, var2);      <i>&#x2013; see instruciton 202/203</i></li>
+<li>jumpNe(pos, time, var1, var2);      <i>&#x2013; see instruciton 204/205</i></li>
+<li>jumpGt(pos, time, var1, var2);      <i>&#x2013; see instruciton 206/207</i></li>
+<li>jumpGe(pos, time, var1, var2);      <i>&#x2013; see instruciton 208/209</i></li>
+<li>jumpLt(pos, time, var1, var2);      <i>&#x2013; see instruciton 210/211</i></li>
+<li>jumpLe(pos, time, var1, var2);      <i>&#x2013; see instruciton 212/213</i></li>
+<li>jumpSt(pos, time);                  &#x2013; <i>see instruction 214</i></li>
+<li>jumpNotSt(pos, time);               &#x2013; <i>see instruction 215</i></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org520400b" class="outline-2">
+<h2 id="org520400b">ALIASES</h2>
+<div class="outline-text-2" id="text-org520400b">
+<p>
+Aliases are defined in the header with the keyword <code>using</code> and the syntax <span class="underline">alias = aliased</span>
+</p>
+</div>
+<div id="outline-container-org5175872" class="outline-3">
+<h3 id="org5175872">instruction alias</h3>
+<div class="outline-text-3" id="text-org5175872">
+<p>
+Combine the keyword <code>using</code> with <code>ins</code> or <code>instruction</code> to create an alias for an instruction.
+You can define any number of aliases for a given instruction but it can&rsquo;t go in conflict with other names.
+</p>
+</div>
+</div>
+<div id="outline-container-org60edf99" class="outline-3">
+<h3 id="org60edf99">variable alias</h3>
+<div class="outline-text-3" id="text-org60edf99">
+<p>
+Combine the keyword <code>using</code> with <code>var</code> or <code>variable</code> to create an alias for a variable.
+You can define any number of aliases for a given variable but it can&rsquo;t go in conflict with other names.
+</p>
+</div>
+</div>
+<div id="outline-container-orgc877fee" class="outline-3">
+<h3 id="orgc877fee">value alias</h3>
+<div class="outline-text-3" id="text-orgc877fee">
+<p>
+Combine the keyword <code>using</code> with <code>val</code> or <code>value</code> to create an alias for a value.
+You can define any number of aliases for a given value but it can&rsquo;t go in conflict with other names.
+</p>
+</div>
+</div>
+<div id="outline-container-org54ed367" class="outline-3">
+<h3 id="org54ed367">example</h3>
+<div class="outline-text-3" id="text-org54ed367">
+<div class="org-src-container">
+<pre class="src src-sdas
+
+using
+
+using">
+using
+
+using instruction aliasedIns = Instruction // instruction alias
+using variable aliasedVar = Variable // variable alias
+using value zero = 0 // value alias
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org94ebb64" class="outline-2">
+<h2 id="org94ebb64">REGISTERS AND RESERVED VALUES</h2>
+<div class="outline-text-2" id="text-org94ebb64">
+</div>
+<div id="outline-container-orgd78f332" class="outline-3">
+<h3 id="orgd78f332">int values</h3>
+<div class="outline-text-3" id="text-orgd78f332">
+<ul class="org-ul">
+<li>[ 100000 ] : I0        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100001 ] : I1        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100002 ] : I2        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100003 ] : I3        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100004 ] : I4        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100005 ] : I5        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100006 ] : I6        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100007 ] : I7        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100008 ] : I8        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100009 ] : I9        - rw        &#x2013; general purpose integer register</li>
+<li>[ 100050 ] : Itop      - rw        &#x2013; used to store the result on top of the stack</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-org0174c4f" class="outline-3">
+<h3 id="org0174c4f">float values</h3>
+<div class="outline-text-3" id="text-org0174c4f">
+<ul class="org-ul">
+<li>[100010.f] : f0        - rw        &#x2013; general purpose float register</li>
+<li>[100011.f] : f1        - rw        &#x2013; general purpose float register</li>
+<li>[100012.f] : f2        - rw        &#x2013; general purpose float register</li>
+<li>[100013.f] : f3        - rw        &#x2013; general purpose float register</li>
+<li>[100014.f] : f4        - rw        &#x2013; general purpose float register</li>
+<li>[100015.f] : f5        - rw        &#x2013; general purpose float register</li>
+<li>[100016.f] : f6        - rw        &#x2013; general purpose float register</li>
+<li>[100017.f] : f7        - rw        &#x2013; general purpose float register</li>
+<li>[100018.f] : f8        - rw        &#x2013; general purpose float register</li>
+<li>[100019.f] : f9        - rw        &#x2013; general purpose float register</li>
+<li>[100051.f] : ftop      - rw        &#x2013; used to store the result on top of the stack</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org801ad38" class="outline-2">
+<h2 id="org801ad38">INSTRUCTION SET:</h2>
+<div class="outline-text-2" id="text-org801ad38">
+<ul class="org-ul">
+<li>script flow instructions (0-99)</li>
+<li>math instructions (100-199)</li>
+<li>jump and loop instructions (200-299)</li>
+<li>hitbox and hurtbox instructions (300-399)</li>
+<li>motion related instructions (400-499)</li>
+</ul>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-right" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">asm</th>
+<th scope="col" class="org-left">ins</th>
+<th scope="col" class="org-left">name</th>
+<th scope="col" class="org-left">arguments</th>
+<th scope="col" class="org-left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0x0000</td>
+<td class="org-left">ins<sub>0</sub></td>
+<td class="org-left">nop</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">does nothing</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0001</td>
+<td class="org-left">ins<sub>1</sub></td>
+<td class="org-left">ret</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">returns from the current subroutine</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0002</td>
+<td class="org-left">ins<sub>2</sub></td>
+<td class="org-left">call</td>
+<td class="org-left">int</td>
+<td class="org-left">calls a subroutine at <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0032</td>
+<td class="org-left">ins<sub>50</sub></td>
+<td class="org-left">puts</td>
+<td class="org-left">int</td>
+<td class="org-left">print string at offset <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0033</td>
+<td class="org-left">ins<sub>51</sub></td>
+<td class="org-left">putc</td>
+<td class="org-left">int</td>
+<td class="org-left">print integer <i>arg0</i> as character</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0034</td>
+<td class="org-left">ins<sub>52</sub></td>
+<td class="org-left">puti</td>
+<td class="org-left">int</td>
+<td class="org-left">print integer <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0035</td>
+<td class="org-left">ins<sub>53</sub></td>
+<td class="org-left">putf</td>
+<td class="org-left">float</td>
+<td class="org-left">print float <i>arg0</i></td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">0x0064</td>
+<td class="org-left">ins<sub>100</sub></td>
+<td class="org-left">iset</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0065</td>
+<td class="org-left">ins<sub>101</sub></td>
+<td class="org-left">fset</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0066</td>
+<td class="org-left">ins<sub>102</sub></td>
+<td class="org-left">ipsh</td>
+<td class="org-left">int</td>
+<td class="org-left">push <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0067</td>
+<td class="org-left">ins<sub>103</sub></td>
+<td class="org-left">fpsh</td>
+<td class="org-left">float</td>
+<td class="org-left">push <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0068</td>
+<td class="org-left">ins<sub>104</sub></td>
+<td class="org-left">ipop</td>
+<td class="org-left">&amp;int</td>
+<td class="org-left">pop <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0069</td>
+<td class="org-left">ins<sub>105</sub></td>
+<td class="org-left">fpop</td>
+<td class="org-left">&amp;float</td>
+<td class="org-left">pop <i>arg0</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006A</td>
+<td class="org-left">ins<sub>106</sub></td>
+<td class="org-left">iadd</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> += <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006B</td>
+<td class="org-left">ins<sub>107</sub></td>
+<td class="org-left">fadd</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> += <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006A</td>
+<td class="org-left">ins<sub>108</sub></td>
+<td class="org-left">isub</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> -= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006B</td>
+<td class="org-left">ins<sub>109</sub></td>
+<td class="org-left">fsub</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> -= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006C</td>
+<td class="org-left">ins<sub>110</sub></td>
+<td class="org-left">imul</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> *= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006D</td>
+<td class="org-left">ins<sub>111</sub></td>
+<td class="org-left">fmul</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> *= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006E</td>
+<td class="org-left">ins<sub>112</sub></td>
+<td class="org-left">idiv</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> <i>= /arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x006F</td>
+<td class="org-left">ins<sub>113</sub></td>
+<td class="org-left">fdiv</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> <i>= /arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0070</td>
+<td class="org-left">ins<sub>114</sub></td>
+<td class="org-left">imod</td>
+<td class="org-left">&amp;int   int</td>
+<td class="org-left"><i>arg0</i> %= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0071</td>
+<td class="org-left">ins<sub>115</sub></td>
+<td class="org-left">fmod</td>
+<td class="org-left">&amp;float float</td>
+<td class="org-left"><i>arg0</i> %= <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0072</td>
+<td class="org-left">ins<sub>116</sub></td>
+<td class="org-left">isadd</td>
+<td class="org-left">&amp;int   int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> + <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0073</td>
+<td class="org-left">ins<sub>117</sub></td>
+<td class="org-left">fsadd</td>
+<td class="org-left">&amp;float float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> + <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0074</td>
+<td class="org-left">ins<sub>118</sub></td>
+<td class="org-left">issub</td>
+<td class="org-left">&amp;int   int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> - <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0075</td>
+<td class="org-left">ins<sub>119</sub></td>
+<td class="org-left">fssub</td>
+<td class="org-left">&amp;float float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> - <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0076</td>
+<td class="org-left">ins<sub>120</sub></td>
+<td class="org-left">ismul</td>
+<td class="org-left">&amp;int   int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> * <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0077</td>
+<td class="org-left">ins<sub>121</sub></td>
+<td class="org-left">fsmul</td>
+<td class="org-left">&amp;float float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> * <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0078</td>
+<td class="org-left">ins<sub>122</sub></td>
+<td class="org-left">isdiv</td>
+<td class="org-left">&amp;int   int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> / <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0079</td>
+<td class="org-left">ins<sub>123</sub></td>
+<td class="org-left">fsdiv</td>
+<td class="org-left">&amp;float float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> / <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007A</td>
+<td class="org-left">ins<sub>124</sub></td>
+<td class="org-left">ismod</td>
+<td class="org-left">&amp;int   int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> % <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007B</td>
+<td class="org-left">ins<sub>125</sub></td>
+<td class="org-left">fsmod</td>
+<td class="org-left">&amp;float float float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> % <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007C</td>
+<td class="org-left">ins<sub>126</sub></td>
+<td class="org-left">ieq</td>
+<td class="org-left">&amp;bool  int   int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> == <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007D</td>
+<td class="org-left">ins<sub>127</sub></td>
+<td class="org-left">feq</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> == <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007E</td>
+<td class="org-left">ins<sub>128</sub></td>
+<td class="org-left">ineq</td>
+<td class="org-left">&amp;bool  int    int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> != <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x007F</td>
+<td class="org-left">ins<sub>129</sub></td>
+<td class="org-left">fneq</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> != <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0080</td>
+<td class="org-left">ins<sub>130</sub></td>
+<td class="org-left">igt</td>
+<td class="org-left">&amp;bool  int    int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &gt;  <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0081</td>
+<td class="org-left">ins<sub>131</sub></td>
+<td class="org-left">fgt</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &gt;  <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0082</td>
+<td class="org-left">ins<sub>132</sub></td>
+<td class="org-left">ige</td>
+<td class="org-left">&amp;bool  int    int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &gt;= <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0083</td>
+<td class="org-left">ins<sub>133</sub></td>
+<td class="org-left">fge</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &gt;= <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0084</td>
+<td class="org-left">ins<sub>134</sub></td>
+<td class="org-left">ilt</td>
+<td class="org-left">&amp;bool  int    int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &lt;  <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0085</td>
+<td class="org-left">ins<sub>135</sub></td>
+<td class="org-left">flt</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &lt;  <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0086</td>
+<td class="org-left">ins<sub>136</sub></td>
+<td class="org-left">ile</td>
+<td class="org-left">&amp;bool  int    int</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &lt;= <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0087</td>
+<td class="org-left">ins<sub>137</sub></td>
+<td class="org-left">fle</td>
+<td class="org-left">&amp;bool  float  float</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> &lt;= <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0088</td>
+<td class="org-left">ins<sub>138</sub></td>
+<td class="org-left">not</td>
+<td class="org-left">&amp;bool  bool</td>
+<td class="org-left"><i>arg0</i> = <b>not</b> <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x0089</td>
+<td class="org-left">ins<sub>139</sub></td>
+<td class="org-left">and</td>
+<td class="org-left">&amp;bool  bool   bool</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> <b>and</b> <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x008A</td>
+<td class="org-left">ins<sub>140</sub></td>
+<td class="org-left">or</td>
+<td class="org-left">&amp;bool  bool   bool</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> <b>or</b> <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x008B</td>
+<td class="org-left">ins<sub>141</sub></td>
+<td class="org-left">xor</td>
+<td class="org-left">&amp;bool  bool   bool</td>
+<td class="org-left"><i>arg0</i> = <i>arg1</i> <b>xor</b> <i>arg2</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x008C</td>
+<td class="org-left">ins<sub>142</sub></td>
+<td class="org-left">istadd</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">+ the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x008D</td>
+<td class="org-left">ins<sub>143</sub></td>
+<td class="org-left">fstadd</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">+ the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x008E</td>
+<td class="org-left">ins<sub>144</sub></td>
+<td class="org-left">istsub</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">- the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x008F</td>
+<td class="org-left">ins<sub>145</sub></td>
+<td class="org-left">fstsub</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">- the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0090</td>
+<td class="org-left">ins<sub>146</sub></td>
+<td class="org-left">istmul</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">* the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0091</td>
+<td class="org-left">ins<sub>147</sub></td>
+<td class="org-left">fstmul</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">* the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0092</td>
+<td class="org-left">ins<sub>148</sub></td>
+<td class="org-left">istdiv</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">/ the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0093</td>
+<td class="org-left">ins<sub>149</sub></td>
+<td class="org-left">fstdiv</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">/ the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0094</td>
+<td class="org-left">ins<sub>150</sub></td>
+<td class="org-left">istmod</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">% the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0095</td>
+<td class="org-left">ins<sub>151</sub></td>
+<td class="org-left">fstmod</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">% the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0096</td>
+<td class="org-left">ins<sub>152</sub></td>
+<td class="org-left">isteq</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">eq the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0097</td>
+<td class="org-left">ins<sub>153</sub></td>
+<td class="org-left">fsteq</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">eq the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0098</td>
+<td class="org-left">ins<sub>154</sub></td>
+<td class="org-left">istneq</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">!= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x0099</td>
+<td class="org-left">ins<sub>155</sub></td>
+<td class="org-left">fstneq</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">!= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009A</td>
+<td class="org-left">ins<sub>156</sub></td>
+<td class="org-left">istgt</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&gt;  the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009B</td>
+<td class="org-left">ins<sub>157</sub></td>
+<td class="org-left">fstgt</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&gt;  the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009C</td>
+<td class="org-left">ins<sub>158</sub></td>
+<td class="org-left">istge</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&gt;= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009D</td>
+<td class="org-left">ins<sub>159</sub></td>
+<td class="org-left">fstge</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&gt;= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009E</td>
+<td class="org-left">ins<sub>160</sub></td>
+<td class="org-left">istlt</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&lt;  the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x009F</td>
+<td class="org-left">ins<sub>161</sub></td>
+<td class="org-left">fstlt</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&lt;  the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A0</td>
+<td class="org-left">ins<sub>162</sub></td>
+<td class="org-left">istle</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&lt;= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A1</td>
+<td class="org-left">ins<sub>163</sub></td>
+<td class="org-left">fstle</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&lt;= the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A2</td>
+<td class="org-left">ins<sub>164</sub></td>
+<td class="org-left">stnot</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">!  the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A3</td>
+<td class="org-left">ins<sub>165</sub></td>
+<td class="org-left">stand</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&amp;&amp; the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A4</td>
+<td class="org-left">ins<sub>166</sub></td>
+<td class="org-left">stor</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">or the top of the stack</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00A5</td>
+<td class="org-left">ins<sub>167</sub></td>
+<td class="org-left">stxor</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">^  the top of the stack</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">0x00C8</td>
+<td class="org-left">ins<sub>200</sub></td>
+<td class="org-left">jmp</td>
+<td class="org-left">int    int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i>&#x2013; &gt; 0</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00C9</td>
+<td class="org-left">ins<sub>201</sub></td>
+<td class="org-left">jmdec</td>
+<td class="org-left">int    int   &amp;int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CA</td>
+<td class="org-left">ins<sub>202</sub></td>
+<td class="org-left">jmieq</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> == <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CB</td>
+<td class="org-left">ins<sub>203</sub></td>
+<td class="org-left">jmfeq</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> == <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CC</td>
+<td class="org-left">ins<sub>204</sub></td>
+<td class="org-left">jmine</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> != <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CD</td>
+<td class="org-left">ins<sub>205</sub></td>
+<td class="org-left">jmfne</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> != <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CE</td>
+<td class="org-left">ins<sub>206</sub></td>
+<td class="org-left">jmigt</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &gt;  <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00CF</td>
+<td class="org-left">ins<sub>207</sub></td>
+<td class="org-left">jmfgt</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &gt;  <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D0</td>
+<td class="org-left">ins<sub>208</sub></td>
+<td class="org-left">jmige</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &gt;= <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D1</td>
+<td class="org-left">ins<sub>209</sub></td>
+<td class="org-left">jmfge</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &gt;= <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D2</td>
+<td class="org-left">ins<sub>210</sub></td>
+<td class="org-left">jmilt</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &lt;  <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D3</td>
+<td class="org-left">ins<sub>211</sub></td>
+<td class="org-left">jmflt</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &lt;  <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D4</td>
+<td class="org-left">ins<sub>212</sub></td>
+<td class="org-left">jmile</td>
+<td class="org-left">int    int   int   int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &lt;= <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D5</td>
+<td class="org-left">ins<sub>213</sub></td>
+<td class="org-left">jmfle</td>
+<td class="org-left">int    int   float float</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if <i>arg2</i> &lt;= <i>arg3</i></td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D6</td>
+<td class="org-left">ins<sub>214</sub></td>
+<td class="org-left">jmst</td>
+<td class="org-left">int    int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if stTop != 0</td>
+</tr>
+
+<tr>
+<td class="org-right">0x00D7</td>
+<td class="org-left">ins<sub>215</sub></td>
+<td class="org-left">jmnst</td>
+<td class="org-left">int    int</td>
+<td class="org-left">jump to <i>arg0</i> at time <i>arg1</i> if stTop == 0</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">0x012C</td>
+<td class="org-left">ins<sub>300</sub></td>
+<td class="org-left">attack</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#x2013; see the attack related part</td>
+</tr>
+
+<tr>
+<td class="org-right">0x012D</td>
+<td class="org-left">ins<sub>301</sub></td>
+<td class="org-left">rstHit</td>
+<td class="org-left">int</td>
+<td class="org-left">reset hitbox group arg0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Clement Chambard</p>
+<p class="date">Created: 2022-03-26 Sat 16:33</p>
+</div>
+</body>
+</html>

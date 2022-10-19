@@ -1,0 +1,261 @@
+#+TITLE: Smile Destructor Attack Script
+#+DESCRIPTION: SDAS documentations
+#+AUTHOR: Clement Chambard
+#+EXPORT_FILE_NAME: ~/dev/SmileDestructor/SDAS/sdas_doc.html
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+OPTIONS: num:nil
+
+* Syntax
+** Header
+Each script must begin with a specific header
+#+begin_src sdas
+    // Header
+    attack_name: "name";
+    anim_name: "anim name";
+#+end_src
+*** attack name
+The name of the attack
+    (used to get the script from a compiled fileblock)
+*** anim name
+The name of the animation
+    (used to play anim along with the script)
+** Begin and end of script
+Each script must contain these statements :
+#+begin_src  sdas
+    // Header
+
+    // Start close
+    #begin
+
+        // Script core
+
+    // End close
+    #end
+#+end_src
+- =#begin=
+    will mark the entry point of the script and open a *code block*
+- =#end=
+    will mark the end of the *code block*. Anything after can only be *subroutines*
+- =#sub= /name/
+    will open a new code block for a new *sub*
+** Subroutines
+A script can use *subroutines* :
+#+begin_src sdas
+    // Header
+
+    // Script that uses the subroutine
+    #begin
+        Subroutine();
+    #end
+
+    // Start a new subroutine and name it
+    #sub Subroutine
+
+        // Subroutine code
+
+    // End close
+    #end
+
+#+end_src
+** Comments
+A comment is a line beginning with =//= or anything between the =/**/= delimiters as seen in the previous examples
+** Frame labels
+Each line of the script will be executed at a specific point in time
+*** The 0 label
+This time label will be executed when the script is first called
+*** Relative labels
+These labels compare the time with the previous label
+#+begin_src sdas
+    #begin
+
+    0:  //the 0 label
+
+    2:  // another label
+
+    -1: // has time 2-1 = 1
+
+    +2: // has time 1+2 = 3
+
+    #end
+#+end_src
+** Position labels and jump instructions
+*** Position label
+These labels mark a position in the script.
+#+begin_src sdas
+    0:
+        instruction1();
+    label:
+        instruction2();
+#+end_src
+*** Jump instructions
+You can use any of the *jump instructions* to go directly to a label :
+#+begin_src sdas
+    label:
+        instruction2();
+        jump(label, 0);  // in that case, instruction2 will be executed indefinitely
+#+end_src
+- jump(pos, time);                    /-- see instruction 200/
+- jumpDec(pos, time, var);            /-- see instruciton 201/
+- jumpEq(pos, time, var1, var2);      /-- see instruciton 202/203/
+- jumpNe(pos, time, var1, var2);      /-- see instruciton 204/205/
+- jumpGt(pos, time, var1, var2);      /-- see instruciton 206/207/
+- jumpGe(pos, time, var1, var2);      /-- see instruciton 208/209/
+- jumpLt(pos, time, var1, var2);      /-- see instruciton 210/211/
+- jumpLe(pos, time, var1, var2);      /-- see instruciton 212/213/
+- jumpSt(pos, time);                  -- /see instruction 214/
+- jumpNotSt(pos, time);               -- /see instruction 215/
+
+* Aliases
+Aliases are defined in the header with the keyword =using= and the syntax _alias = aliased_
+** instruction alias
+Combine the keyword =using= with =ins= or =instruction= to create an alias for an instruction.
+You can define any number of aliases for a given instruction but it can't go in conflict with other names.
+** variable alias
+Combine the keyword =using= with =var= or =variable= to create an alias for a variable.
+You can define any number of aliases for a given variable but it can't go in conflict with other names.
+** value alias
+Combine the keyword =using= with =val= or =value= to create an alias for a value.
+You can define any number of aliases for a given value but it can't go in conflict with other names.
+** example
+#+begin_src sdas
+
+using instruction aliasedIns = Instruction // instruction alias
+using variable aliasedVar = Variable // variable alias
+using value zero = 0 // value alias
+
+#+end_src
+
+* Registers and reserved values
+** int values
+- [ 100000 ] : I0        - rw        -- general purpose integer register
+- [ 100001 ] : I1        - rw        -- general purpose integer register
+- [ 100002 ] : I2        - rw        -- general purpose integer register
+- [ 100003 ] : I3        - rw        -- general purpose integer register
+- [ 100004 ] : I4        - rw        -- general purpose integer register
+- [ 100005 ] : I5        - rw        -- general purpose integer register
+- [ 100006 ] : I6        - rw        -- general purpose integer register
+- [ 100007 ] : I7        - rw        -- general purpose integer register
+- [ 100008 ] : I8        - rw        -- general purpose integer register
+- [ 100009 ] : I9        - rw        -- general purpose integer register
+- [ 100050 ] : Itop      - rw        -- used to store the result on top of the stack
+** float values
+- [100010.f] : f0        - rw        -- general purpose float register
+- [100011.f] : f1        - rw        -- general purpose float register
+- [100012.f] : f2        - rw        -- general purpose float register
+- [100013.f] : f3        - rw        -- general purpose float register
+- [100014.f] : f4        - rw        -- general purpose float register
+- [100015.f] : f5        - rw        -- general purpose float register
+- [100016.f] : f6        - rw        -- general purpose float register
+- [100017.f] : f7        - rw        -- general purpose float register
+- [100018.f] : f8        - rw        -- general purpose float register
+- [100019.f] : f9        - rw        -- general purpose float register
+- [100051.f] : ftop      - rw        -- used to store the result on top of the stack
+
+* Instruction set
+- script flow instructions (0-99)
+- math instructions (100-199)
+- jump and loop instructions (200-299)
+- hitbox and hurtbox instructions (300-399)
+- motion related instructions (400-499)
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+|    asm | ins     | name   | arguments                | description                                       |
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+| 0x0000 | ins_0   | nop    |                          | does nothing                                      |
+| 0x0001 | ins_1   | ret    |                          | returns from the current subroutine               |
+| 0x0002 | ins_2   | call   | int                      | calls a subroutine at /arg0/                      |
+| 0x0032 | ins_50  | puts   | int                      | print string at offset /arg0/                     |
+| 0x0033 | ins_51  | putc   | int                      | print integer /arg0/ as character                 |
+| 0x0034 | ins_52  | puti   | int                      | print integer /arg0/                              |
+| 0x0035 | ins_53  | putf   | float                    | print float /arg0/                                |
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+| 0x0064 | ins_100 | iset   | &int   int               | /arg0/ = /arg1/                                   |
+| 0x0065 | ins_101 | fset   | &float float             | /arg0/ = /arg1/                                   |
+| 0x0066 | ins_102 | ipsh   | int                      | push /arg0/                                       |
+| 0x0067 | ins_103 | fpsh   | float                    | push /arg0/                                       |
+| 0x0068 | ins_104 | ipop   | &int                     | pop /arg0/                                        |
+| 0x0069 | ins_105 | fpop   | &float                   | pop /arg0/                                        |
+| 0x006A | ins_106 | iadd   | &int   int               | /arg0/ += /arg1/                                  |
+| 0x006B | ins_107 | fadd   | &float float             | /arg0/ += /arg1/                                  |
+| 0x006A | ins_108 | isub   | &int   int               | /arg0/ -= /arg1/                                  |
+| 0x006B | ins_109 | fsub   | &float float             | /arg0/ -= /arg1/                                  |
+| 0x006C | ins_110 | imul   | &int   int               | /arg0/ *= /arg1/                                  |
+| 0x006D | ins_111 | fmul   | &float float             | /arg0/ *= /arg1/                                  |
+| 0x006E | ins_112 | idiv   | &int   int               | /arg0/ /= /arg1/                                  |
+| 0x006F | ins_113 | fdiv   | &float float             | /arg0/ /= /arg1/                                  |
+| 0x0070 | ins_114 | imod   | &int   int               | /arg0/ %= /arg1/                                  |
+| 0x0071 | ins_115 | fmod   | &float float             | /arg0/ %= /arg1/                                  |
+| 0x0072 | ins_116 | isadd  | &int   int   int         | /arg0/ = /arg1/ + /arg2/                          |
+| 0x0073 | ins_117 | fsadd  | &float float float       | /arg0/ = /arg1/ + /arg2/                          |
+| 0x0074 | ins_118 | issub  | &int   int   int         | /arg0/ = /arg1/ - /arg2/                          |
+| 0x0075 | ins_119 | fssub  | &float float float       | /arg0/ = /arg1/ - /arg2/                          |
+| 0x0076 | ins_120 | ismul  | &int   int   int         | /arg0/ = /arg1/ * /arg2/                          |
+| 0x0077 | ins_121 | fsmul  | &float float float       | /arg0/ = /arg1/ * /arg2/                          |
+| 0x0078 | ins_122 | isdiv  | &int   int   int         | /arg0/ = /arg1/ / /arg2/                          |
+| 0x0079 | ins_123 | fsdiv  | &float float float       | /arg0/ = /arg1/ / /arg2/                          |
+| 0x007A | ins_124 | ismod  | &int   int   int         | /arg0/ = /arg1/ % /arg2/                          |
+| 0x007B | ins_125 | fsmod  | &float float float       | /arg0/ = /arg1/ % /arg2/                          |
+| 0x007C | ins_126 | ieq    | &bool  int   int         | /arg0/ = /arg1/ == /arg2/                         |
+| 0x007D | ins_127 | feq    | &bool  float  float      | /arg0/ = /arg1/ == /arg2/                         |
+| 0x007E | ins_128 | ineq   | &bool  int    int        | /arg0/ = /arg1/ != /arg2/                         |
+| 0x007F | ins_129 | fneq   | &bool  float  float      | /arg0/ = /arg1/ != /arg2/                         |
+| 0x0080 | ins_130 | igt    | &bool  int    int        | /arg0/ = /arg1/ >  /arg2/                         |
+| 0x0081 | ins_131 | fgt    | &bool  float  float      | /arg0/ = /arg1/ >  /arg2/                         |
+| 0x0082 | ins_132 | ige    | &bool  int    int        | /arg0/ = /arg1/ >= /arg2/                         |
+| 0x0083 | ins_133 | fge    | &bool  float  float      | /arg0/ = /arg1/ >= /arg2/                         |
+| 0x0084 | ins_134 | ilt    | &bool  int    int        | /arg0/ = /arg1/ <  /arg2/                         |
+| 0x0085 | ins_135 | flt    | &bool  float  float      | /arg0/ = /arg1/ <  /arg2/                         |
+| 0x0086 | ins_136 | ile    | &bool  int    int        | /arg0/ = /arg1/ <= /arg2/                         |
+| 0x0087 | ins_137 | fle    | &bool  float  float      | /arg0/ = /arg1/ <= /arg2/                         |
+| 0x0088 | ins_138 | not    | &bool  bool              | /arg0/ = *not* /arg1/                             |
+| 0x0089 | ins_139 | and    | &bool  bool   bool       | /arg0/ = /arg1/ *and* /arg2/                      |
+| 0x008A | ins_140 | or     | &bool  bool   bool       | /arg0/ = /arg1/ *or* /arg2/                       |
+| 0x008B | ins_141 | xor    | &bool  bool   bool       | /arg0/ = /arg1/ *xor* /arg2/                      |
+| 0x008C | ins_142 | istadd |                          | + the top of the stack                            |
+| 0x008D | ins_143 | fstadd |                          | + the top of the stack                            |
+| 0x008E | ins_144 | istsub |                          | - the top of the stack                            |
+| 0x008F | ins_145 | fstsub |                          | - the top of the stack                            |
+| 0x0090 | ins_146 | istmul |                          | * the top of the stack                            |
+| 0x0091 | ins_147 | fstmul |                          | * the top of the stack                            |
+| 0x0092 | ins_148 | istdiv |                          | / the top of the stack                            |
+| 0x0093 | ins_149 | fstdiv |                          | / the top of the stack                            |
+| 0x0094 | ins_150 | istmod |                          | % the top of the stack                            |
+| 0x0095 | ins_151 | fstmod |                          | % the top of the stack                            |
+| 0x0096 | ins_152 | isteq  |                          | eq the top of the stack                           |
+| 0x0097 | ins_153 | fsteq  |                          | eq the top of the stack                           |
+| 0x0098 | ins_154 | istneq |                          | != the top of the stack                           |
+| 0x0099 | ins_155 | fstneq |                          | != the top of the stack                           |
+| 0x009A | ins_156 | istgt  |                          | >  the top of the stack                           |
+| 0x009B | ins_157 | fstgt  |                          | >  the top of the stack                           |
+| 0x009C | ins_158 | istge  |                          | >= the top of the stack                           |
+| 0x009D | ins_159 | fstge  |                          | >= the top of the stack                           |
+| 0x009E | ins_160 | istlt  |                          | <  the top of the stack                           |
+| 0x009F | ins_161 | fstlt  |                          | <  the top of the stack                           |
+| 0x00A0 | ins_162 | istle  |                          | <= the top of the stack                           |
+| 0x00A1 | ins_163 | fstle  |                          | <= the top of the stack                           |
+| 0x00A2 | ins_164 | stnot  |                          | !  the top of the stack                           |
+| 0x00A3 | ins_165 | stand  |                          | && the top of the stack                           |
+| 0x00A4 | ins_166 | stor   |                          | or the top of the stack                           |
+| 0x00A5 | ins_167 | stxor  |                          | ^  the top of the stack                           |
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+| 0x00C8 | ins_200 | jmp    | int    int               | jump to /arg0/ at time /arg1/ if /arg2/-- > 0     |
+| 0x00C9 | ins_201 | jmdec  | int    int   &int        | jump to /arg0/ at time /arg1/                     |
+| 0x00CA | ins_202 | jmieq  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ == /arg3/ |
+| 0x00CB | ins_203 | jmfeq  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ == /arg3/ |
+| 0x00CC | ins_204 | jmine  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ != /arg3/ |
+| 0x00CD | ins_205 | jmfne  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ != /arg3/ |
+| 0x00CE | ins_206 | jmigt  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ >  /arg3/ |
+| 0x00CF | ins_207 | jmfgt  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ >  /arg3/ |
+| 0x00D0 | ins_208 | jmige  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ >= /arg3/ |
+| 0x00D1 | ins_209 | jmfge  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ >= /arg3/ |
+| 0x00D2 | ins_210 | jmilt  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ <  /arg3/ |
+| 0x00D3 | ins_211 | jmflt  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ <  /arg3/ |
+| 0x00D4 | ins_212 | jmile  | int    int   int   int   | jump to /arg0/ at time /arg1/ if /arg2/ <= /arg3/ |
+| 0x00D5 | ins_213 | jmfle  | int    int   float float | jump to /arg0/ at time /arg1/ if /arg2/ <= /arg3/ |
+| 0x00D6 | ins_214 | jmst   | int    int               | jump to /arg0/ at time /arg1/ if stTop != 0       |
+| 0x00D7 | ins_215 | jmnst  | int    int               | jump to /arg0/ at time /arg1/ if stTop == 0       |
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+| 0x012C | ins_300 | attack |                          | -- see the attack related part                    |
+| 0x012D | ins_301 | rstHit | int                      | reset hitbox group arg0                           |
+| 0x012E | ins_302 | rstBox | int                      | reset boxes of hitbox group arg0                  |
+|--------+---------+--------+--------------------------+---------------------------------------------------|
+# setSpeed ...

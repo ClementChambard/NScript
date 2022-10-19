@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+
+from symbols import getScriptIns, readContent
+from utils import COL, readFile, intTo4digitHex, getFilename, setReadLocation, terminateCompilation
+from pointers import createPointer, affectPtrs, resolvePtrs, writePtrs, asmPtrs, resetPointers, setPtrDebug
+from instructions import addVarAlias, addInsAlias, addValAlias, checkVar, checkIns, resetAliases
+from scriptHeader import ScriptHeader, aliasAddType, aliasSetDebug, aliasSetExpr, aliasEnable
+from struct import pack
+from sys import argv
+from subprocess import run
+from utils import getCurrentMeta
+
+""" Global variables """
+
+isExecuting = False
+isRunning = False
+outputType = 1
+outputFile = "a.out"
+metafile = "scripts.sdasmeta"
+debugVal = 0
+
+""" Reads the entire file """
+
+
+def CodeReadFile(text, comp, out, metafile):
+    subs = []
+    Code = ""
+    subname = ""
+    subline = 0
+    setReadLocation("In header")
+    for i, l in enumerate(text.split('\n')):
+        if ('#begin' in l):
+            subname = "main"
+            subline = i + 1
+            ScriptHeader.setCurrent(Code)
+            ScriptHeader.writeMeta(metafile, out, getFilename())
+            setReadLocation("In main subroutine")
+            Code = ""
+            continue
+        if ('#end' in l):
+            # A sub is a list of instruction
+            subs.append(getScriptIns(readContent(Code, subline)))
+            createPointer(subname, subs[-1][0][3])
+            subname = ""
+            continue
+        if ('#sub' in l):
+            subname = l.split(' ')[1]
+            subline = i + 1
+            setReadLocation(f"In subroutine '{subname}'")
+            Code = ""
+            continue
+        Code += l + '\n'
+    offset = subs[-1][-1][3] + 8 + 4 * len(subs[-1][-1][2])
+    affectPtrs(offset)
+
+    if comp:
+        print("compiling script :", ScriptHeader.getCurrent())
+        with open(out, "wb") as f:
+            for s in subs:
+                resolvePtrs(s)
+                for i in s:
+                    f.write(int(i[0]).to_bytes(
+                        2, byteorder='little', signed=False))
+                    f.write((8 + len(i[2]) * 4).to_bytes(
+                        2, byteorder='little', signed=False))
+                    f.write(int(i[1]).to_bytes(
+                        2, byteorder='little', signed=True))
+                    f.write((0).to_bytes(
+                        2, byteorder='little', signed=False))
+                    for a in i[2]:
+                        if a[1] == 'S':
+                            f.write(a[0].to_bytes(
+                                4, byteorder='little', signed=True))
+                        elif a[1] == 'f':
+                            f.write(pack('<f', a[0]))
+            writePtrs(f)
+        resetAliases()
+        resetPointers()
+    else:
+        print("generating assembly for script :", ScriptHeader.getCurrent())
+        asm = ""
+        for s in subs:
+            resolvePtrs(s)
+            for i in s:
+                asm += intTo4digitHex(i[3]) + " " + \
+                    str(i[1]) + " " + str(i[0]) + " "
+                for a in i[2]:
+                    if a[1] == 'ptr':
+                        asm += intTo4digitHex(a[0]) + " "
+                    else:
+                        asm += str(a[0]) + " "
+                asm += '\n'
+        asm += asmPtrs()
+        print(asm)
+        exit(0)
+
+
+""" CONFIGURE ALIASES """
+
+
+aliasEnable(True)
+
+aliasSetExpr("using %t %n = %v")
+
+aliasAddType("instruction", ["ins", "instruction"], addInsAlias, checkIns)
+aliasAddType("variable", ["var", "variable"], addVarAlias, checkVar)
+aliasAddType("value", ["val", "value"], addValAlias)
+
+
+""" A TEST FUNCTION THAT CAN BE RUN WITH THE '--run-tests' OPTION """
+
+
+def Tests():
+    print("aaa")
+    print(checkType("aaa"))
+
+
+""" ERROR STRINGS AND GLOBAL VARIABLES"""
+
+notEnoughArgsStr = COL.BOLD + "sdas: " + \
+    COL.setFG(1) + "fatal error: " + COL.RESET + "no input file"
+
+usageStr = """Usage: sdas [options] <input file>
+Options:
+     -Da --debug-all                 activate all debug infos
+     -c                              compile and assemble but don't link
+     -C  --combine                   combine files from the metafile
+     -o  --output-file   <file>      write to <file>
+     -h  --help                      show this page
+     -x  --execute       [args]      execute instead of compiling
+     -m  --meta          <file>      select the metafile
+     -r  --run           [args]      compile and run
+         --run-tests                 run the test code
+         --recompile-meta            recompile files in the metafile
+"""
+
+""" CHECK ALL OPTIONS """
+
+recompileMeta = False
+combine = False
+
+def option(opt, i):
+    global outputType, outputFile, metafile, isExecuting, isRunning, debugVal, combine, recompileMeta
+    if opt[i] == "--run-tests":
+        Tests()
+        exit(0)
+    elif opt[i] == "-C" or opt[i] == "--combine":
+        combine = True
+        return 1
+    elif opt[i] == "--recompile-meta":
+        recompileMeta = True
+        return 1
+    elif opt[i] == "-m" or opt[i] == "--meta":
+        if len(opt) == i+1:
+            errstr = COL.BOLD + "sdas: " + COL.setFG(1) + "error:" + COL.RESET + " missing file name after " + \
+                COL.BOLD + "'" + opt[i] + "'" + COL.RESET
+            print(errstr)
+            terminateCompilation()
+        metafile = opt[i+1]
+        return 2
+    elif opt[i] == "-Da" or opt[i] == "--debug-all":
+        debugVal = 10
+        return 1
+    elif opt[i] == "--run" or opt[i] == "-r":
+        isRunning = True
+        return 1
+    elif opt[i] == "-c":
+        outputType = 0
+        return 1
+    elif opt[i] == "-o" or opt[i] == "--output-file":
+        if len(opt) == i+1:
+            errstr = COL.BOLD + "sdas: " + COL.setFG(1) + "error:" + COL.RESET + " missing file name after " + \
+                COL.BOLD + "'" + opt[i] + "'" + COL.RESET
+            print(errstr)
+            terminateCompilation()
+        outputFile = opt[i+1]
+        return 2
+    elif opt[i] == "-h" or opt[i] == "--help":
+        print(usageStr)
+        exit(0)
+    elif opt[i] == "-x" or opt[i] == "--execute":
+        isExecuting = True
+        return 1
+    return 0
+
+
+""" CHECK ARGS """
+
+
+args = []
+
+if len(argv)<=1:
+    print(notEnoughArgsStr)
+    terminateCompilation()
+argCtr = 1
+while argCtr < len(argv):
+    o = option(argv, argCtr)
+    if o == 0:
+        args.append(argv[argCtr])
+        argCtr += 1
+    else:
+        argCtr += o
+
+if len(args) < 1 and not (recompileMeta or combine):
+    print(notEnoughArgsStr)
+    terminateCompilation()
+
+
+""" RUN """
+
+
+aliasSetDebug(debugVal == 9 or debugVal == 10)
+setPtrDebug(debugVal == 8 or debugVal == 10)
+
+if recompileMeta:
+    meta = getCurrentMeta(metafile)
+    print("start loop ?")
+    for entry in meta:
+        print("yes !")
+        out = entry["file_name"]
+        inp = entry["origin_file"]
+        prog = readFile(inp)
+        print("read code")
+        CodeReadFile(prog, True, out, metafile)
+        print("loop again ?")
+    exit(0)
+
+if combine:
+    print("combining metaFile is not implemented")
+    terminateCompilation()
+
+if isExecuting:
+    print("Running...")
+    cmd = ['SDASVM'] + args
+    subprocess.run(cmd)
+    exit(0)
+
+prog=readFile(args[0])
+CodeReadFile(prog, outputType != 0, outputFile, metafile)
+
+if isRunning:
+    print("Running...")
+    cmd = ['SDASVM', outputFile] + args[1:]
+    subprocess.run(cmd)
+    exit(0)

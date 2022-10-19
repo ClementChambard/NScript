@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+
+stack = []
+functionStack = []
+
+curTime = 0
+asm = ""
+
+def Atk(*args, exe):
+    global asm
+    asm += "atk "
+    for arg in args:
+        asm += arg + ' '
+    asm += '\n'
+    if not exe: return
+    print("Attack ", end='')
+    for arg in args:
+        print(arg, end=' ')
+    print()
+
+def Rst(val, exe):
+    global asm
+    asm += "rst " + str(val) + '\n'
+    if not exe: return
+    if val == 15:
+        print("Reset all")
+    else:
+        print("Reset", val)
+
+def Tim(t, exe):
+    global asm
+    asm += "tim " + str(t) + '\n'
+    if not exe: return
+    global curTime
+    print("Tim", t)
+    while curTime < t:
+        curTime+=1
+        print (curTime,":",sep='')
+
+def Push(val, exe):
+    global asm
+    asm += "psh " + str(val) + '\n'
+    if not exe: return
+    print("Push", val)
+    stack.append(val)
+
+def Pop(exe):
+    global asm
+    asm += "pop\n"
+    if not exe: return
+    print("Pop")
+    functionStack.append(stack.pop())
+    print("popped value :",functionStack[-1])
+
+def Add(exe):
+    global asm
+    asm += "add\n"
+    if not exe: return
+    print("Add")
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(a+b)
+
+def Sub(exe):
+    global asm
+    asm += "sub\n"
+    if not exe: return
+    print("Sub")
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(b-a)
+
+def Inc(exe):
+    global asm
+    asm += "inc\n"
+    if not exe: return
+    print("Inc")
+    stack[-1] += 1
+
+def Dec(exe):
+    global asm
+    asm += "dec\n"
+    if not exe: return
+    print("Dec")
+    stack[-1] -= 1
+
+def Mul(exe):
+    global asm
+    asm += "mul\n"
+    if not exe: return
+    print("Mul")
+    a = stack.pop()
+    b = stack.pop()
+    stack.append(a*b)
+
+def Ext(i, exe):
+    global asm
+    asm += "ext " + str(i) + '\n'
+    if not exe: return
+    print("Ext", i)
+    if len(stack) == 0 or not stack[-1]:
+        print("End of Program with code", i)
+        exit
+
+def analyseLine(line, exe):
+    #remove front blank spaces
+    if len(line) == 0:
+        return
+    if line[0] == '+':
+        if len(line) > 1 and line[1] == '+':
+            Inc(exe)
+        else:
+            try:
+                line = line[1:]
+                num = float(line)
+                Push(num,exe)
+                Add(exe)
+            except:
+                Add(exe)
+    elif line[0] == '-':
+        if len(line) > 1 and line[1] == '-':
+            Dec(exe)
+        else:
+            try:
+                line = line[1:]
+                num = float(line)
+                Push(num,exe)
+                Sub(exe)
+            except:
+                Sub(exe)
+    elif line[0] == '*':
+        try:
+            line = line[1:]
+            num = float(line)
+            Push(num,exe)
+            Mul(exe)
+        except:
+            Mul(exe)
+    elif line[0] == ':':
+        try:
+            line = line[1:]
+            num = int(line)
+            Tim(num,exe)
+        except:
+            print("missplaced character ':'")
+    elif line[0] == '!':
+        try:
+            line = line[1:]
+            num = float(line)
+            Push(num,exe)
+        except:
+            Pop(exe)
+
+def ExecAsmLine(tokens):
+    if len(tokens) == 0:
+        return
+    if tokens[0] == "psh": Push(float(tokens[1]), True)
+    elif tokens[0] == "pop": Pop(True)
+    elif tokens[0] == "add": Add(True)
+    elif tokens[0] == "sub": Sub(True)
+    elif tokens[0] == "inc": Inc(True)
+    elif tokens[0] == "dec": Dec(True)
+    elif tokens[0] == "mul": Mul(True)
+    elif tokens[0] == "tim": Tim(int(tokens[1]), True)
+
+def GenAsm(text):
+    global curTime
+    curTime = 0
+    begin = False
+    name = ""
+    animname = ""
+    Codelines = text.split('\n')
+    for instruction in Codelines:
+        instruction = instruction.strip()
+        if not begin:
+            separated = instruction.split(":")
+            if len(separated) > 1:
+                if separated[0] == "script_name":
+                    name = separated[1].strip()
+                elif separated[0] == "anim_name":
+                    animname = separated[1].strip()
+            elif instruction == "#begin":
+                begin = True
+                print("script",name,"   anim =",animname)
+        else:
+            if instruction == "#end":
+                return name, animname
+            analyseLine(instruction, False)
+
+def ExecAsm(text):
+    global curTime
+    curTime = 0
+    Codelines = text.split('\n')
+    for instruction in Codelines:
+        instruction = instruction.strip()
+        tokens = instruction.split(' ')
+        ExecAsmLine(tokens)
+
+def CreateBinary(output):
+    pass
+
+def readFile(filename):
+    lines = ""
+    with open(filename, 'r') as opened_source_file:
+        for l in opened_source_file:
+            lines += l
+    return lines
+
+
+
+class argument:
+    def __init__(self, val, T):
+        self.val = val
+        self.Type = T
+    def isFloat(self):
+        return self.Type == 1
+    def isInt(self):
+        return self.Type == 0
+    def isPointer(self):
+        return self.Type > 1
+
+class instruction:
+    def __init__(self, Type, Time, args):
+        self.Type = Type
+        self.Time = Time
+        self.Length = Length
+        self.Args = args
+    def toString(self):
+        return "ins_" + Type + "(" + args + ");"
+
+
+
+
+
+
+
+
+
+
+
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+notEnoughArgsStr = bcolors.BOLD + "sdas: " + bcolors.FAIL + "fatal error: " + bcolors.ENDC + "no input file"
+
+usageStr = """
+usage: sdas [options] <input file>
+options:
+     -c                              compile and assemble but don't link
+     -o  --output-file   <file>      write to <file>
+     -h  --help                      show this page
+     -e  --execute                   execute the code
+"""
+
+isExecuting = False
+outputType = 1
+outputFile = "a.out"
+
+def option(opt, i):
+    global outputType; global outputFile; global isExecuting
+    if opt[i] == "-c":
+        outputType = 0
+        return 1
+    elif opt[i] == "-o" or opt[i] == "--output-file":
+        if len(opt) == i+1:
+            errstr = bcolors.BOLD+"sdas: " + bcolors.FAIL + "error:"+bcolors.ENDC+" missing file name after "+ bcolors.BOLD+ "'" + opt[i]+ "'"+ bcolors.ENDC
+            print(errstr)
+            exit(0)
+        outputFile = opt[i+1]
+        return 2
+    elif opt[i] == "-h" or opt[i] == "--help":
+        print(usageStr)
+        exit(0)
+    elif opt[i] == "-e" or opt[i] == "--execute":
+        isExecuting = True
+        return 1
+    return 0
+
+import sys
+
+args = []
+
+if len(sys.argv)<=1:
+    print(notEnoughArgsStr)
+    exit(0)
+argCtr = 1
+while argCtr < len(sys.argv):
+    o = option(sys.argv, argCtr)
+    if o == 0:
+        args.append(sys.argv[argCtr])
+        argCtr += 1
+    else:
+        argCtr += o
+
+if len(args) < 1:
+    print(notEnoughArgsStr)
+    exit(0)
+
+prog=readFile(args[0])
+
+if args[0].split('.')[-1] == "asm":
+    asm = prog
+else:
+    GenAsm(prog)
+
+if isExecuting:
+    print("executing...")
+    ExecAsm(asm)
+    exit(0)
+
+if outputType == 0:
+    with open(outputFile, 'w') as f:
+        f.write(asm)
+    exit(0)
+else:
+    CreateBinary(outputFile)

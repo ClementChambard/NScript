@@ -1,0 +1,14 @@
+script_name: "hello"
+anim_name: "none"
+
+/*
+    Simple Hello World program
+*/
+
+#begin
+
+0:
+    puts "Hello, World!\n";
+    return;
+
+#end

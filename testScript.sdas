@@ -1,0 +1,65 @@
+script_name: "test"
+anim_name: "NO_ANIM"
+
+using variable a = I0
+using variable b = I1
+using variable c = I2
+using variable d = I3
+
+/*
+
+Ce script calcule la suite de fibonacci pour les nombres < arg0
+
+*/
+
+#begin
+
+0:
+    pop d;
+    attack 0 0 0 0 0 0 0 0 5;
+    call tests;
+    a = 0;
+    b = 1;
+    call fibo;
+    return;
+
+#end
+
+#sub tests
+
+    push a;
+    push b;
+    push c;
+    push d;
+     if ((1+1+1) == 4) { puts "yes\n"; }
+    pop d;
+    pop c;
+    pop b;
+    pop a;
+    return;
+
+#end
+
+// Fonction pour afficher les nombres et sauter une ligne
+#sub print
+
+0:
+    put b;
+    putc '\n';
+    return;
+
+#end
+
+// La fonction principale
+#sub fibo
+
+0:
+startloop:
+    call print;
+    c = a;
+    a = b;
+    b = a + c;
+    jumpLt startloop 0 b d;
+    return;
+
+#end
