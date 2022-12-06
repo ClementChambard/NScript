@@ -1,4 +1,24 @@
-#+title: Readme
+#+title: NScript
 #+author: Clement Chambard
 
-Readme file, TODO
+This is an attempt at creating a small programming language for my game engine.
+
+The documentation can be found in [[sdas_doc.html][sdas_doc.html]]
+
+** Install
+
+ * Clone the repo
+ `git clone https://github.com/ClementChambard/NScript.git`
+
+*** Compiler
+
+You will just need python and you wil be able to run `sdas`
+
+*** VM
+
+The VM is found in the 'sdasVM' subdirectory.
+you can compile it however you prefer.
+
+** Contact
+
+for further questions, contact me at clement.chambard@universite-paris-saclay.fr

@@ -318,11 +318,14 @@ def resolveIns(symboles, ins):
         if nT == -1:
             ThrowError(f"wrong argument type {cur_ins_args_type} for function {Type}", symboles[0].line, symboles[0].column, len(symboles[0].sym))
         # cast arguments
-        at = getInsArgs(nT)
-        for i in range(len(at)):
-            if at[i] == 'S': cur_ins_args[i] = str(int(float(cur_ins_args[i])))
-            elif at[i] == 'f': cur_ins_args[i] = str(float(cur_ins_args[i]))
-        Type = nT
+        try:
+            at = getInsArgs(nT)
+            for i in range(len(at)):
+                if at[i] == 'S': cur_ins_args[i] = str(int(float(cur_ins_args[i])))
+                elif at[i] == 'f': cur_ins_args[i] = str(float(cur_ins_args[i]))
+            Type = nT
+        except:
+            pass
     else:
         ThrowError(f"unknown instruction {Type}", symboles[0].line, symboles[0].column, len(symboles[0].sym))
     ins.append((Type, time, cur_ins_args, instructionCount))
