@@ -8,7 +8,7 @@ The documentation can be found in [[sdas_doc.html][sdas_doc.html]]
 ** Install
 
  * Clone the repo
- `git clone https://github.com/ClementChambard/NScript.git`
+ git clone https://github.com/ClementChambard/NScript.git
 
 *** Compiler
 
