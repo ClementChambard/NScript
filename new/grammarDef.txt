@@ -1,0 +1,49 @@
+$token TYPE KEYWORD_type
+$token id IDENT 
+$token int INT
+$token float FLOAT
+$token str STR
+$token lcb SYMBOL_{
+$token rcb SYMBOL_} 
+$token atsign SYMBOL_@ '@'
+$token semicolon SYMBOL_; ';'
+$token affect SYMBOL_= '='
+$token minus SYMBOL_- '-'
+$token lp SYMBOL_( '('
+$token rp SYMBOL_) ')'
+$token plus SYMBOL_+ '+'
+
+$$$$
+$$$$
+
+$base Type
+
+$$$$
+
+Type := TYPE id AliasOpt lcb FieldList rcb { [$1.val, $2, $4] }
+
+$$
+
+AliasOpt := '@' id  { $1.val }
+          | <empty> { None   }
+
+$$
+
+FieldList := Field FieldList { [$0] + $1 }
+           | <empty>         { []        }
+
+$$
+
+Field := id id AliasOpt DefaultOpt ';' { [$0.val, $1.val, $2, $3] }
+
+$$
+
+DefaultOpt := '=' E    { $1   }
+            | <empty>  { None }
+
+$$
+
+E := int       { int($0.val)   }
+   | float     { float($0.val)   }
+   | str       { $0.val.strip('"')   }
+   | '(' E '+' E ')' { $1 + $3 }

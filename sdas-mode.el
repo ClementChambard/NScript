@@ -28,12 +28,13 @@
     (modify-syntax-entry ?\n "> b")
     ;; strings
     (modify-syntax-entry ?\" "\"")
+    (modify-syntax-entry ?' "\"")
     table))
 
 ;; keywords highlighting
 (eval-and-compile
   (defconst sdas-keywords
-    '("using" "var" "variable" "ins" "instruction" "val" "value" "begin" "end" "sub" "if" "Pedro" "Mohamed" "MohamedChar" "Clement")))
+    '("using" "var" "variable" "ins" "instruction" "val" "value" "begin" "end" "sub" "if" "else" "return")))
 
 (defconst sdas-highlights
   `((,(regexp-opt sdas-keywords 'symbols) . font-lock-keyword-face)))
@@ -54,8 +55,3 @@
 (provide 'sdas-mode)
 
 ;;; sdas-mode.el ends here
-;;
-;; testtesttes
-;; testtesttesttes
-;; testtt
-;; tes
