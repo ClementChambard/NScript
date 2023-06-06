@@ -1,0 +1,32 @@
+
+1: e terminal => fst(e) = e
+2: E ::= {} => fst(e) = {}
+3: E ::= Y1 Y2 Y3 ...
+  fst(E) = fst(Y1) ~ {}
+
+meaning if fst(Yi) contains {}
+  fst(Yi) ~ {} = (fst(Yi) \ {}) U (fst(Yi+1) ~ {})
+
+
+
+def first(sym, rules, ignore):
+
+  def firstChain(symboles, rules, ignore):
+    fsts = first(symboles[0], rules, ignore)
+    if None in fsts and len(symboles) > 1:
+      fsts.add(firstChain(symboles[1:, rules, ignore]))
+    return fsts
+
+  if sym in ignore:
+    return set()
+  if sym.isTerminal():
+    return set([sym])
+  ignore.add(nterm)
+  out = set()
+  for r in rules:
+    if r.produces(nterm):
+      if r.isNone():
+        out.add(None)
+      out.add(firstChain(r.symboles))
+  return out
+

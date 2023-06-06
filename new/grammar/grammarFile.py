@@ -19,9 +19,9 @@ def parseBaseSection(content: str) -> str:
     return "NTerm__" + content.split("$base")[1].strip()
 
 def parseOneRule(name: str, content: str, grammartokens: [GrammarToken]) -> GrammarRule:
-    [tokens, func] = content.split("{")
+    [tokens, func] = content.split("{", 1)
     tokens = [GrammarToken.getTok(t, grammartokens) for t in tokens.strip().split()]
-    func = func.split("}")[0].strip()
+    func = "}".join(func.split("}")[0:-1]).strip()
     for i in range(100):
         func = func.replace(f"${i}", f"l[{i}]")
     func = eval(f"lambda l : {func}")
@@ -114,8 +114,8 @@ def affectFirstAndFollow(nonTerm: [str], rules: [GrammarRule], tokens: [GrammarT
     res = {}
     for nt in nonTerm:
         res[nt] = {"firsts": firsts(nt, rules, tokens), "follows": follows(nt, rules, tokens)}
-    #for k,v in res.items():
-    #    print(k,v)
+    for k,v in res.items():
+        print(k,v)
 
 class GrammarFile:
     def __init__(self, filename):
@@ -134,15 +134,17 @@ class GrammarFile:
         [checkRule(r, self.tokens, self.nonTerm) for r in self.rules]
 
         # affect first and follow of non terminal
-        affectFirstAndFollow(self.nonTerm, self.rules, self.tokens)
+        #affectFirstAndFollow(self.nonTerm, self.rules, self.tokens)
 
         # affect rule id
         for i, r in enumerate(self.rules):
             r.i = i
 
 
-
-if __name__ == "__main__":
+def main():
     file = GrammarFile("grammarDef.txt")
     for r in file.rules:
         print(r)
+
+if __name__ == "__main__":
+    main()
