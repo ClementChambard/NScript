@@ -18,33 +18,33 @@ $base Doc
 $$$$
 
 Doc := TokenList qdol PrecList qdol Info qdol RuleList { [$0, $2, $4, $6] }
-$$
+
 TokenList := TokenDef TokenList { [$0] + $1 }
            | <empty> { [] }
-$$
+
 TokenDef := TOKEN id TokenName TokenAliasOpt { {"id": $1.val, "name": $2, "alias": $3} }
-$$
+
 TokenName := tokenName { $0.val } | id { $0.val }
-$$
+
 TokenAliasOpt := tokenAlias { $0.val } | <empty> { None }
-$$
+
 PrecList := <empty> { None }
-$$
+
 Info := BASE id { $1.val }
-$$
-RuleList := Rule ddol RuleList { $0 + $2 }
-          | Rule { $0 }
-$$
+
+RuleList := Rule RuleList { $0 + $1 }
+          | <empty> { [] }
+
 Rule := id prod RuleRightList { [{"produces": $0.val, "tokens": r["tokens"], "ast": r["ast"]} for r in $2]}
-$$
+
 RuleRightList := RuleRight pipe RuleRightList { [$0] + $2 }
                | RuleRight { [$0] }
-$$
+
 RuleRight := RuleTokenList astin { { "tokens": $0, "ast": $1.val }}
-$$
+
 RuleTokenList := RuleToken RuleTokenList { [$0] + $1 } 
                | <empty> { [] }
-$$
+
 RuleToken := id { {"id": $0.val } }
            | tokenAlias { { "alias": $0.val } }
            | EMPTY { None }

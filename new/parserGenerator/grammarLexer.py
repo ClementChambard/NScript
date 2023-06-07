@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Tuple
+
 
 class TOKEN(Enum):
     ERROR = -2
@@ -10,10 +12,12 @@ class TOKEN(Enum):
     TOKEN_ALIAS = 4
     ASTIN = 5
 
+
 SYMBOLES_1 = ["|"]
 SYMBOLES_2 = ["$$", ":="]
 SYMBOLES_4 = ["$$$$"]
 KEYWORDS = ["$token", "$base", "<empty>"]
+
 
 class Token:
     def __init__(self, val: str, typ: TOKEN, line: int, col: int):
@@ -21,18 +25,23 @@ class Token:
         self.typ = typ
         self.line = line
         self.col = col
+
     def __str__(self) -> str:
-        return self.typ.name + " " + self.val + " " + str(self.line) + ":" + str(self.col)
+        return (
+            self.typ.name + " " + self.val + " " + str(self.line) + ":" + str(self.col)
+        )
+
     def __repr__(self) -> str:
         return f"Token({self.val}, TOKEN.{self.typ.name}, {self.line}, {self.col})"
+
     def parseStr(self) -> str:
         out = "Term__" + self.typ.name
         if self.typ == TOKEN.KEYWORD:
-            if self.val == "$token": 
+            if self.val == "$token":
                 return "Term__KEYWORD_token"
-            if self.val == "$base": 
+            if self.val == "$base":
                 return "Term__KEYWORD_base"
-            if self.val == "<empty>": 
+            if self.val == "<empty>":
                 return "Term__KEYWORD_empty"
         if self.typ == TOKEN.SYMBOL:
             out += "_" + self.val
@@ -41,12 +50,13 @@ class Token:
         return out
 
 
-def errorLex(fileContent: str, read: str) -> (str, int):
+def errorLex(fileContent: str, read: str) -> Tuple[str, TOKEN]:
     tok = read
     while fileContent != "" and fileContent[0].isalnum():
         tok += fileContent[0]
         fileContent = fileContent[1:]
     return tok, TOKEN.ERROR
+
 
 def identifierLex(fileContent: str) -> str:
     ident = fileContent[0]
@@ -56,16 +66,18 @@ def identifierLex(fileContent: str) -> str:
         fileContent = fileContent[1:]
     return ident
 
+
 def findTokenName(fileContent):
     tn, _ = fileContent.split(maxsplit=1)
-    parts = tn.split('_')
+    parts = tn.split("_")
     if len(parts) != 2:
         return False
     if not parts[0].isupper():
         return False
     # other checks ?
     return True
-    
+
+
 def tryLexAst(fileContent):
     astin = ""
     nbbrace = 1
@@ -81,22 +93,22 @@ def tryLexAst(fileContent):
         astin += fileContent[0]
         fileContent = fileContent[1:]
 
-def lex(fileContent: str, line: int, col: int) -> (Token, str):
-    
+
+def lex(fileContent: str, line: int, col: int) -> Tuple[Token, str]:
     # EOF
     if fileContent == "":
         return Token("", TOKEN.EOF, line, col), fileContent
 
     # white spaces
     if fileContent[0] == " ":
-        return lex(fileContent[1:], line, col+1)
+        return lex(fileContent[1:], line, col + 1)
     if fileContent[0] == "\n":
-        return lex(fileContent[1:], line+1, 0)
+        return lex(fileContent[1:], line + 1, 0)
 
     # TOKEN_NAME
     if findTokenName(fileContent):
         tn, _ = fileContent.split(maxsplit=1)
-        return Token(tn, TOKEN.TOKEN_NAME, line, col), fileContent[len(tn):]
+        return Token(tn, TOKEN.TOKEN_NAME, line, col), fileContent[len(tn) :]
 
     # TOKEN_ALIAS
     if fileContent[0] == "'" and len(fileContent) > 2 and fileContent[2] == "'":
@@ -106,20 +118,23 @@ def lex(fileContent: str, line: int, col: int) -> (Token, str):
     if fileContent[0] == "{":
         astin = tryLexAst(fileContent[1:])
         if astin is not None:
-            return Token(astin, TOKEN.ASTIN, line, col), fileContent[len(astin)+2:]
+            return Token(astin, TOKEN.ASTIN, line, col), fileContent[len(astin) + 2 :]
 
     # KEYWORD
     if fileContent[0] == "$":
         ident = identifierLex(fileContent[1:])
         if "$" + ident in KEYWORDS:
-            return Token("$"+ident, TOKEN.KEYWORD, line, col), fileContent[len(ident)+1:]
+            return (
+                Token("$" + ident, TOKEN.KEYWORD, line, col),
+                fileContent[len(ident) + 1 :],
+            )
     if fileContent[0:7] == "<empty>":
         return Token("<empty>", TOKEN.KEYWORD, line, col), fileContent[7:]
 
     # id
     if fileContent[0].isalpha() or fileContent[0] == "_":
         ident = identifierLex(fileContent)
-        return Token(ident, TOKEN.IDENT, line, col), fileContent[len(ident):]
+        return Token(ident, TOKEN.IDENT, line, col), fileContent[len(ident) :]
 
     # symboles
     if fileContent[0:4] in SYMBOLES_4:
@@ -129,9 +144,10 @@ def lex(fileContent: str, line: int, col: int) -> (Token, str):
     if fileContent[0] in SYMBOLES_1:
         return Token(fileContent[0], TOKEN.SYMBOL, line, col), fileContent[1:]
 
-    # error 
+    # error
     return Token(fileContent[0], TOKEN.ERROR, line, col), fileContent[1:]
-    
+
+
 def lexAll(fileContent: str):
     col = 0
     line = 0
@@ -141,9 +157,10 @@ def lexAll(fileContent: str):
         col = tok.col + len(tok.val)
         line = tok.line
         tokens.append(tok)
-        if tok.typ == TOKEN.EOF: 
+        if tok.typ == TOKEN.EOF:
             break
     return tokens
+
 
 def main():
     txt = ""

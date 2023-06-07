@@ -22,26 +22,16 @@ $$$$
 
 Type := TYPE id AliasOpt lcb FieldList rcb { [$1.val, $2, $4] }
 
-$$
-
 AliasOpt := '@' id  { $1.val }
           | <empty> { None   }
-
-$$
 
 FieldList := Field FieldList { [$0] + $1 }
            | <empty>         { []        }
 
-$$
-
 Field := id id AliasOpt DefaultOpt ';' { [$0.val, $1.val, $2, $3] }
-
-$$
 
 DefaultOpt := '=' E    { $1   }
             | <empty>  { None }
-
-$$
 
 E := int       { int($0.val)   }
    | float     { float($0.val)   }

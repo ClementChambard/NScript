@@ -1,13 +1,14 @@
-from .grammarFile import GrammarFile
+from typing import Tuple
 from .grammarRule import GrammarRule
 from .grammarStateRule import GrammarStateRule
 
-ruleList = []
+ruleList: list = []
 base = ""
 verbose = False
 
-def transitions(stat) -> dict:
-    shift = {}
+
+def transitions(stat) -> Tuple[dict, list]:
+    shift: dict = {}
     reduce = []
     for r in stat:
         s, rto = r.advance()
@@ -19,36 +20,43 @@ def transitions(stat) -> dict:
         shift[s] = to
     return shift, reduce
 
+
 def resolveConflicts(shift, reduce, tokens):
+    _ = tokens
     # Place the OK and set default
     additionnal = {}
     if shift.get("Term__EOF", "no") != "no":
         shift.pop("Term__EOF")
         additionnal["Term__EOF"] = ["OK"]
     default = ["Err"]
-    if len(reduce) > 0: 
+    if len(reduce) > 0:
         # if multiple reduce, should pick the more appropriate
         if len(reduce) > 1:
-            if verbose: 
+            if verbose:
                 print("reduce/reduce conflicts:")
-                for i,p1 in enumerate(reduce):
-                    for p2 in reduce[i+1:]:
-                        print("-",p1,"/",p2)
+                for i, p1 in enumerate(reduce):
+                    for p2 in reduce[i + 1 :]:
+                        print("-", p1, "/", p2)
             # TODO resolve
             # How ???
 
-        # if reduce is not empty, should remove unnecessary shift (shift/reduce conflicts)
+        # if reduce is not empty, should remove unnecessary shift
+        # (shift/reduce conflicts)
         if len(shift) > 0:
             # conflict is when shift is in the follow of the last rule symbole
             # TODO: need follows ?
-            if verbose: print("possible shift/reduce conflict(s)")
+            if verbose:
+                print("possible shift/reduce conflict(s)")
 
         default = ["R", reduce[0]]
     return shift, default, additionnal
 
+
 def constructGrammar(tokens, default, rules):
     # get initial state
-    axiom = GrammarStateRule(GrammarRule([default,"Term__EOF"],2,"AXIOM",lambda l : l[0]),0)
+    axiom = GrammarStateRule(
+        GrammarRule([default, "Term__EOF"], 2, "AXIOM", "lambda l : l[0]"), 0
+    )
     state0 = GrammarStateRule.completeState([axiom], rules)
 
     # list of state
@@ -81,29 +89,9 @@ def constructGrammar(tokens, default, rules):
         # for all shift check if state exists
         for k, s in shift.items():
             # getState will create a new one if it doesnt exist
-            shift[k] = ['S', getState(s)]
+            shift[k] = ["S", getState(s)]
         shift["DEFAULT"] = default
         shift.update(additionnal)
         stateTable.append(shift)
 
     return stateTable
-
-def readfile(filename: str) -> ([GrammarRule], []):
-    global ruleList, base, terminals, nonTerminals
-    file = GrammarFile(filename)
-    ruleList = file.rules
-    base = file.base
-    nonTerminals = file.nonTerm
-    terminals = file.tokens
-    stateTable = constructGrammar(terminals, base, ruleList)
-    return ruleList, stateTable
-
-def main():
-    file = GrammarFile("grammarDef.txt")
-    ruleList, default, tokens = file.rules, file.base, file.tokens
-    # state = GrammarStateRule.completeState([GrammarStateRule(ruleList[0], 2), GrammarStateRule(ruleList[0], 4)], ruleList)
-    # [print(s) for s in state]
-    [print(s) for s in constructGrammar(tokens, default, ruleList)]
-
-if __name__ == "__main__":
-    main()
