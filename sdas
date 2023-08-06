@@ -1,15 +1,42 @@
 #!/usr/bin/env python3
 
 from symbols import getScriptIns, readContent
-from utils import COL, readFile, intTo4digitHex, getFilename, setReadLocation, terminateCompilation
-from pointers import createPointer, affectPtrs, resolvePtrs, writePtrs, asmPtrs, resetPointers, setPtrDebug
-from instructions import addVarAlias, addInsAlias, addValAlias, checkVar, checkIns, resetAliases
-from scriptHeader import ScriptHeader, aliasAddType, aliasSetDebug, aliasSetExpr, aliasEnable
+import subprocess
+from utils import (
+    COL,
+    readFile,
+    intTo4digitHex,
+    getFilename,
+    setReadLocation,
+    terminateCompilation,
+)
+from pointers import (
+    createPointer,
+    affectPtrs,
+    resolvePtrs,
+    writePtrs,
+    asmPtrs,
+    resetPointers,
+    setPtrDebug,
+)
+from instructions import (
+    addVarAlias,
+    addInsAlias,
+    addValAlias,
+    checkVar,
+    checkIns,
+    resetAliases,
+)
+from scriptHeader import (
+    ScriptHeader,
+    aliasAddType,
+    aliasSetDebug,
+    aliasSetExpr,
+    aliasEnable,
+)
 from struct import pack
-from sys import argv
-from subprocess import run
 from utils import getCurrentMeta
-
+import py_cmd_line as pcl
 
 
 """ Reads the entire file """
@@ -17,32 +44,32 @@ from utils import getCurrentMeta
 
 def CodeReadFile(text, comp, out, metafile):
     subs = []
-    Code = ""
+    code = ""
     subname = ""
     subline = 0
     setReadLocation("In header")
-    for i, l in enumerate(text.split('\n')):
-        if ('#begin' in l):
+    for i, line in enumerate(text.split("\n")):
+        if "#begin" in line:
             subname = "main"
             subline = i + 1
-            ScriptHeader.setCurrent(Code)
+            ScriptHeader.setCurrent(code)
             ScriptHeader.writeMeta(metafile, out, getFilename())
             setReadLocation("In main subroutine")
-            Code = ""
+            code = ""
             continue
-        if ('#end' in l):
+        if "#end" in line:
             # A sub is a list of instruction
-            subs.append(getScriptIns(readContent(Code, subline)))
+            subs.append(getScriptIns(readContent(code, subline)))
             createPointer(subname, subs[-1][0][3])
             subname = ""
             continue
-        if ('#sub' in l):
-            subname = l.split(' ')[1]
+        if "#sub" in line:
+            subname = line.split(" ")[1]
             subline = i + 1
             setReadLocation(f"In subroutine '{subname}'")
-            Code = ""
+            code = ""
             continue
-        Code += l + '\n'
+        code += line + "\n"
     offset = subs[-1][-1][3] + 8 + 4 * len(subs[-1][-1][2])
     affectPtrs(offset)
 
@@ -52,20 +79,19 @@ def CodeReadFile(text, comp, out, metafile):
             for s in subs:
                 resolvePtrs(s)
                 for i in s:
-                    f.write(int(i[0]).to_bytes(
-                        2, byteorder='little', signed=False))
-                    f.write((8 + len(i[2]) * 4).to_bytes(
-                        2, byteorder='little', signed=False))
-                    f.write(int(i[1]).to_bytes(
-                        2, byteorder='little', signed=True))
-                    f.write((0).to_bytes(
-                        2, byteorder='little', signed=False))
+                    f.write(int(i[0]).to_bytes(2, byteorder="little", signed=False))
+                    f.write(
+                        (8 + len(i[2]) * 4).to_bytes(
+                            2, byteorder="little", signed=False
+                        )
+                    )
+                    f.write(int(i[1]).to_bytes(2, byteorder="little", signed=True))
+                    f.write((0).to_bytes(2, byteorder="little", signed=False))
                     for a in i[2]:
-                        if a[1] == 'S':
-                            f.write(a[0].to_bytes(
-                                4, byteorder='little', signed=True))
-                        elif a[1] == 'f':
-                            f.write(pack('<f', a[0]))
+                        if a[1] == "S":
+                            f.write(a[0].to_bytes(4, byteorder="little", signed=True))
+                        elif a[1] == "f":
+                            f.write(pack("<f", a[0]))
             writePtrs(f)
         resetAliases()
         resetPointers()
@@ -75,14 +101,13 @@ def CodeReadFile(text, comp, out, metafile):
         for s in subs:
             resolvePtrs(s)
             for i in s:
-                asm += intTo4digitHex(i[3]) + " " + \
-                    str(i[1]) + " " + str(i[0]) + " "
+                asm += intTo4digitHex(i[3]) + " " + str(i[1]) + " " + str(i[0]) + " "
                 for a in i[2]:
-                    if a[1] == 'ptr':
+                    if a[1] == "ptr":
                         asm += intTo4digitHex(a[0]) + " "
                     else:
                         asm += str(a[0]) + " "
-                asm += '\n'
+                asm += "\n"
         asm += asmPtrs()
         print(asm)
         exit(0)
@@ -105,38 +130,75 @@ aliasAddType("value", ["val", "value"], addValAlias)
 
 def Tests():
     print("aaa")
-    print(checkType("aaa"))
+    # print(checkType("aaa"))
 
 
 """ Command line """
 
-import py_cmd_line as pcl
 
 pcl.init()
 
-pcl.add_option_func_exit(["--run-tests"        ], Tests          ,                          descr="run rhe test code"                  )
-pcl.add_option_setter   (["-C", "--combine"    ], "combine"      , False, True, dtype=bool, descr="combine files from the metafile"    )
-pcl.add_option_setter   (["--recompile-meta"   ], "recompileMeta", False, True, dtype=bool, descr="recompile files in the metafile"    )
-pcl.add_option_setter   (["-m", "--meta"       ], "metafile"     , "scripts.sdasmeta"     , descr="select the metafile"                )
-pcl.add_option_setter   (["-Da", "--debug-all" ], "debugVal"     , 0, 10,       dtype=int , descr="activate all debug infos"           )
-pcl.add_option_setter   (["-r", "--run"        ], "isRunning"    , False, True, dtype=bool, descr="compile and run"                    )
-pcl.add_option_setter   (["-c"                 ], "outputType"   , 1, 0,        dtype=int , descr="compile and assemble but don't link")
-pcl.add_option_setter   (["-o", "--output-file"], "outputfile"   , "a.out"                , descr="write to a specific file"           )
-pcl.add_option_func_exit(["-h", "--help"       ], pcl.usage      ,                          descr="show this page"                     )
-pcl.add_option_setter   (["-x", "--execute"    ], "isExecuting"  , False, True, dtype=bool, descr="execute instead of compiling"       )
-#pcl.add_option_setter   (["--test-option"      ], "test"         , 100, dtype=int)
+pcl.add_option_func_exit(["--run-tests"], Tests, descr="run rhe test code")
+pcl.add_option_setter(
+    ["-C", "--combine"],
+    "combine",
+    False,
+    True,
+    dtype=bool,
+    descr="combine files from the metafile",
+)
+pcl.add_option_setter(
+    ["--recompile-meta"],
+    "recompileMeta",
+    False,
+    True,
+    dtype=bool,
+    descr="recompile files in the metafile",
+)
+pcl.add_option_setter(
+    ["-m", "--meta"], "metafile", "scripts.sdasmeta", descr="select the metafile"
+)
+pcl.add_option_setter(
+    ["-Da", "--debug-all"],
+    "debugVal",
+    0,
+    10,
+    dtype=int,
+    descr="activate all debug infos",
+)
+pcl.add_option_setter(
+    ["-r", "--run"], "isRunning", False, True, dtype=bool, descr="compile and run"
+)
+pcl.add_option_setter(
+    ["-c"], "outputType", 1, 0, dtype=int, descr="compile and assemble but don't link"
+)
+pcl.add_option_setter(
+    ["-o", "--output-file"], "outputfile", "a.out", descr="write to a specific file"
+)
+pcl.add_option_func_exit(["-h", "--help"], pcl.usage, descr="show this page")
+pcl.add_option_setter(
+    ["-x", "--execute"],
+    "isExecuting",
+    False,
+    True,
+    dtype=bool,
+    descr="execute instead of compiling",
+)
+# pcl.add_option_setter   (["--test-option"      ], "test"         , 100, dtype=int)
 
 pcl.add_arg("input file")
 
 
 """ Check args """
 
-notEnoughArgsStr = COL.BOLD + "sdas: " + COL.setFG(1) + "fatal error: " + COL.RESET + "no input file"
+notEnoughArgsStr = (
+    COL.BOLD + "sdas: " + COL.setFG(1) + "fatal error: " + COL.RESET + "no input file"
+)
 
 cl_args = pcl.read_args()
 print(cl_args)
 
-if cl_args['input file'] is None:
+if cl_args["input file"] is None:
     print(notEnoughArgsStr)
     terminateCompilation()
 
@@ -144,11 +206,11 @@ if cl_args['input file'] is None:
 """ RUN """
 
 
-aliasSetDebug(cl_args['debugVal'] == 9 or cl_args['debugVal'] == 10)
-setPtrDebug(cl_args['debugVal'] == 8 or cl_args['debugVal'] == 10)
+aliasSetDebug(cl_args["debugVal"] == 9 or cl_args["debugVal"] == 10)
+setPtrDebug(cl_args["debugVal"] == 8 or cl_args["debugVal"] == 10)
 
-if cl_args['recompileMeta']:
-    meta = getCurrentMeta(cl_args['metafile'])
+if cl_args["recompileMeta"]:
+    meta = getCurrentMeta(cl_args["metafile"])
     print("start loop ?")
     for entry in meta:
         print("yes !")
@@ -160,21 +222,23 @@ if cl_args['recompileMeta']:
         print("loop again ?")
     exit(0)
 
-if cl_args['combine']:
+if cl_args["combine"]:
     print("combining metaFile is not implemented")
     terminateCompilation()
 
-if cl_args['isExecuting']:
+if cl_args["isExecuting"]:
     print("Running...")
-    cmd = ['SDASVM'] + cl_args['input file']
+    cmd = ["SDASVM"] + cl_args["input file"]
     subprocess.run(cmd)
     exit(0)
 
-prog=readFile(cl_args['input file'])
-CodeReadFile(prog, cl_args['outputType'] != 0, cl_args['outputfile'], cl_args['metafile'])
+prog = readFile(cl_args["input file"])
+CodeReadFile(
+    prog, cl_args["outputType"] != 0, cl_args["outputfile"], cl_args["metafile"]
+)
 
-if cl_args['isRunning']:
+if cl_args["isRunning"]:
     print("Running...")
-    cmd = ['SDASVM', cl_args['outputfile']]
+    cmd = ["SDASVM", cl_args["outputfile"]]
     subprocess.run(cmd)
     exit(0)

@@ -1,0 +1,111 @@
+#+title: NScr
+
+* Files:
+
+** Header .nsh
+- Type declaration
+- Interface declaration
+
+-> will generate cpp/hpp for types
+
+** Source .nscr
+- Object definition
+- Scripts
+
+** Compiled .nso
+
+** Full .ns
+
+** Cache .nc
+Remember state to not regenerate cpp/hpp files
+
+* Type & objects
+
+** Primitive types
+
+| Type          | CPP equivalent  | CPP default |
+|---------------+-----------------+-------------|
+| [?u]int[size] | [?u]int[size]_t | 0           |
+| float         | float           | 0.f         |
+| string        | char*           | nullptr     |
+| script        | void*           | nullptr     |
+TODO: More
+
+** Type declaration
+
+type _Name_ [@ _CppName_ ] {
+  _TypeName_ _FieldName_ [@ _CppFieldName_ ] [= _Default_ ] ;
+  [...]
+}
+
+-> _CppName_.hpp:
+struct _Name?CppName_ {
+  _TypeCppName_ _FieldName?CppFieldName_ = _Default?CppDefault_ ;
+  ...
+};
+
+-> _CppName_.cpp:
+[empty]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Construct grammar:
+
+def constructGrammar(tokens, default, rules):
+    -- get initial state
+    axiom = staterule(rule([default,"EOF"],"axiom"),0)
+    state0 = [axiom] + axiom.complete(rules)
+
+    -- list of state
+    states = [state0]
+    -- state table
+    stateTable = []
+    -- pile of state to do
+    todo = [state0]
+
+    -- add state if it doesnt exist, return state id
+    def getState(state):
+        for i, s in enumerate(states):
+            if s == state:
+                return i
+        states.append(state)
+        todo.append(state)
+        return len(states) - 1
+
+    -- continue while state to do
+    while len(todo) > 0:
+        current = todo[0]
+        todo = todo[1:]
+        -- get possible transitions
+        shift, reduce = transitions(current)
+        -- resolve conflicts
+        shift, default = resolveConflicts(shift, reduce, tokens)
+        -- all shift as states
+        for k, s in shift.items():
+            shift[k] = GrammarStateRule.completeState(s, rules)
+        -- for all shift check if state exists
+        for k, s in shift.items():
+            -- getState will create a new one if it doesnt exist
+            shift[k] = ['S', getState(s)]
+        shift["DEFAULT"] = default
+        stateTable.append(shift)
+
+    return stateTable

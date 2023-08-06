@@ -1,30 +1,46 @@
 #!/usr/bin/env python3
 
+
 class insType:
     def __init__(self, num, name, argString):
         self.num = num
         self.name = name
         self.argString = argString
         self.aliases = []
+
     def addAlias(self, al):
-        if not al in self.aliases:
+        if al not in self.aliases:
             self.aliases.append(al)
             return True
-        else: return False
+        else:
+            return False
+
     def getNumArgs(self):
         return len(self.argString)
+
     def getSize(self):
         return 8 + 4 * self.getNumArgs()
+
     def getFullName(self):
         return self.name + "(" + self.argString + ")"
+
     def match(self, matchStr):
-        return matchStr == self.name or matchStr in self.aliases or matchStr == "ins_" + str(self.num)
+        return (
+            matchStr == self.name
+            or matchStr in self.aliases
+            or matchStr == "ins_" + str(self.num)
+        )
+
     def matchArgs(self, matchStr, args):
-        if not self.match(matchStr): return False
-        if len(args) != len(self.argString): return False
+        if not self.match(matchStr):
+            return False
+        if len(args) != len(self.argString):
+            return False
         for i in range(len(args)):
-            if args[i] != self.argString[i]: return False
+            if args[i] != self.argString[i]:
+                return False
         return True
+
 
 INSTRUCTION_SET = [
     insType(0, "nop", ""),
@@ -35,7 +51,6 @@ INSTRUCTION_SET = [
     insType(52, "put", "S"),
     insType(53, "put", "f"),
     insType(99, "dumpState", ""),
-
     insType(100, "set", "SS"),
     insType(101, "set", "ff"),
     insType(102, "push", "S"),
@@ -104,7 +119,6 @@ INSTRUCTION_SET = [
     insType(165, "and", ""),
     insType(166, "or", ""),
     insType(167, "xor", ""),
-
     insType(200, "jump", "SS"),
     insType(201, "jumpDec", "SSS"),
     insType(202, "jumpEq", "SSSS"),
@@ -121,37 +135,46 @@ INSTRUCTION_SET = [
     insType(213, "jumpLe", "SSff"),
     insType(214, "jumpSt", "SS"),
     insType(215, "jumpNotSt", "SS"),
-
     insType(300, "attack", "SSfffffff"),
     insType(301, "resetHitboxGroup", "S"),
-    insType(302, "resetHitboxes", "S")
+    insType(302, "resetHitboxes", "S"),
 ]
+
 
 def addInsAlias(s, a):
     ret = -2
     for v in VARIABLE_SET:
-        if a in v.aliases or a == v.name: return -1
+        if a in v.aliases or a == v.name:
+            return -1
     for i in INSTRUCTION_SET:
-        if a in i.aliases or a == i.name: return -1
+        if a in i.aliases or a == i.name:
+            return -1
     for v in VALUES_SET:
-        if a == v.name: return -1
+        if a == v.name:
+            return -1
     for i in INSTRUCTION_SET:
         if i.match(s):
             i.addAlias(a)
             ret = 0
     return ret
 
+
 def checkIns(s):
     for i in INSTRUCTION_SET:
-        if i.match(s): return True
+        if i.match(s):
+            return True
     return False
+
 
 def getIns(s, args):
     for i in INSTRUCTION_SET:
-        if i.matchArgs(s, args): return i.num
+        if i.matchArgs(s, args):
+            return i.num
     for i in INSTRUCTION_SET:
-        if i.match(s): return i.num
+        if i.match(s):
+            return i.num
     return -1
+
 
 def getInsArgs(n):
     for i in INSTRUCTION_SET:
@@ -159,17 +182,21 @@ def getInsArgs(n):
             return i.argString
     return ""
 
+
 class Variable:
     def __init__(self, num, name, t):
         self.num = num
         self.name = name
         self.Type = t
         self.aliases = []
+
     def addAlias(self, al):
-        if not al in self.aliases:
+        if al not in self.aliases:
             self.aliases.append(al)
             return True
-        else: return False
+        else:
+            return False
+
     def match(self, matchStr):
         return matchStr == self.name or matchStr in self.aliases
 
@@ -199,59 +226,76 @@ VARIABLE_SET = [
     Variable("100051.", "ftop", "f"),
 ]
 
-def addVarAlias(s,a):
+
+def addVarAlias(s, a):
     for v in VARIABLE_SET:
-        if a in v.aliases or a == v.name: return -1
+        if a in v.aliases or a == v.name:
+            return -1
     for i in INSTRUCTION_SET:
-        if a in i.aliases or a == i.name: return -1
+        if a in i.aliases or a == i.name:
+            return -1
     for v in VALUES_SET:
-        if a == v.name: return -1
+        if a == v.name:
+            return -1
     for v in VARIABLE_SET:
-        if v.match(s): return (-1,0)[v.addAlias(a)]
+        if v.match(s):
+            return (-1, 0)[v.addAlias(a)]
     return -2
+
 
 def checkVar(s):
     for v in VARIABLE_SET:
-        if v.match(s): return True
+        if v.match(s):
+            return True
     return False
+
 
 def getVar(s):
     for v in VARIABLE_SET:
-        if v.match(s): return v.num, v.Type
+        if v.match(s):
+            return v.num, v.Type
     return -1
+
 
 class ValueAlias:
     def __init__(self, val, name):
         self.name = name
         self.val = val
 
-VALUES_SET = [
 
-]
+VALUES_SET: list = []
+
 
 def addValAlias(val, a):
     for v in VARIABLE_SET:
-        if a in v.aliases or a == v.name: return -1
+        if a in v.aliases or a == v.name:
+            return -1
     for i in INSTRUCTION_SET:
-        if a in i.aliases or a == i.name: return -1
+        if a in i.aliases or a == i.name:
+            return -1
     for v in VALUES_SET:
-        if a == v.name: return -1
+        if a == v.name:
+            return -1
     VALUES_SET.append(ValueAlias(val, a))
     return 0
 
+
 def checkValue(s):
     for v in VALUES_SET:
-        if v.name == s: return True
+        if v.name == s:
+            return True
     return False
+
 
 def getValue(s):
     for v in VALUES_SET:
-        if v.name == s: return str(v.val)
+        if v.name == s:
+            return str(v.val)
     return 0
+
 
 def resetAliases():
     for i in INSTRUCTION_SET:
         i.aliases = []
     for v in VARIABLE_SET:
         v.aliases = []
-    VALUES_SET = []
